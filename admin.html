@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block title %}Admin Panel — SecureVision{% endblock %}
+
+{% block content %}
+<div class="p-6 lg:p-8 space-y-8">
+
+  <header>
+    <h1 class="text-2xl font-bold text-white">Administration Panel</h1>
+    <p class="text-[#8898aa] text-sm mt-1">Manage IP allow-list, users, and access history.</p>
+  </header>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+    <!-- ── IP Allow-list management ───────────────────────────────────────── -->
+    <section class="card p-6" aria-label="IP address allow-list management">
+      <h2 class="text-base font-semibold text-white mb-4 flex items-center gap-2">
+        <span aria-hidden="true">🔒</span> IP Allow-List
+      </h2>
+
+      <!-- Add IP form -->
+      <form method="POST" action="{{ url_for('admin.add_ip') }}" class="space-y-3 mb-6"
+            aria-label="Add IP address to allow-list">
+        <div>
+          <label for="ip_address" class="block text-xs font-medium text-[#c4cdd8] mb-1">
+            IP Address <span aria-hidden="true" class="text-[#ff4d6d]">*</span>
+          </label>
+          <input type="text" id="ip_address" name="ip_address"
+                 required aria-required="true"
+                 placeholder="192.168.1.100"
+                 pattern="^[\d.:a-fA-F]+$"
+                 aria-describedby="ip-format-help"
+                 class="w-full bg-[#0a0f1e] border border-[#1f2d45] rounded-lg px-3 py-2
+                        text-white text-sm placeholder-[#8898aa]
+                        focus:border-[#00d4aa] focus:ring-2 focus:ring-[#00d4aa]/30" />
+          <p id="ip-format-help" class="mt-1 text-xs text-[#8898aa]">IPv4 or IPv6 format.</p>
+        </div>
+        <div>
+          <label for="label" class="block text-xs font-medium text-[#c4cdd8] mb-1">Label (optional)</label>
+          <input type="text" id="label" name="label"
+                 placeholder="e.g. Office Router"
+                 class="w-full bg-[#0a0f1e] border border-[#1f2d45] rounded-lg px-3 py-2
+                        text-white text-sm placeholder-[#8898aa]
+                        focus:border-[#00d4aa] focus:ring-2 focus:ring-[#00d4aa]/30" />
+        </div>
+        <button type="submit"
+                class="w-full bg-[#00d4aa] hover:bg-[#00b894] text-black font-semibold
+                       text-sm py-2 rounded-lg transition-colors"
+                aria-label="Add IP address to allow-list">
+          Add to Allow-List
+        </button>
+      </form>
+
+      <!-- Existing IPs table -->
+      {% if ips %}
+      <div class="overflow-x-auto" tabindex="0" aria-label="Scrollable allowed IPs table">
+        <table class="w-full text-xs" aria-label="Currently allowed IP addresses">
+          <thead>
+            <tr class="border-b border-[#1f2d45]">
+              <th scope="col" class="pb-2 text-left text-[#8898aa] font-medium">IP</th>
+              <th scope="col" class="pb-2 text-left text-[#8898aa] font-medium">Label</th>
+              <th scope="col" class="pb-2 text-left text-[#8898aa] font-medium">Status</th>
+              <th scope="col" class="pb-2 text-left text-[#8898aa] font-medium sr-only">Action</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[#1f2d45]">
+            {% for ip in ips %}
+            <tr class="hover:bg-white/3 transition-colors">
+              <td class="py-2 pr-3 font-mono text-white">{{ ip.ip_address }}</td>
+              <td class="py-2 pr-3 text-[#8898aa]">{{ ip.label or '—' }}</td>
+              <td class="py-2 pr-3">
+                <span class="{{ 'badge-success' if ip.is_active else 'badge-danger' }}
+                             px-2 py-0.5 rounded text-xs"
+                      aria-label="{{ 'Active' if ip.is_active else 'Inactive' }}">
+                  {{ 'Active' if ip.is_active else 'Inactive' }}
+                </span>
+              </td>
+              <td class="py-2">
+                {% if ip.is_active %}
+                <form method="POST" action="{{ url_for('admin.remove_ip', ip_id=ip.id) }}"
+                      onsubmit="return confirm('Remove {{ ip.ip_address }} from allow-list?')">
+                  <button type="submit"
+                          class="text-[#ff4d6d] hover:underline focus:underline text-xs"
+                          aria-label="Remove {{ ip.ip_address }} from allow-list">
+                    Remove
+                  </button>
+                </form>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+        <p class="text-[#8898aa] text-sm text-center py-4" role="status">No IPs in the allow-list yet.</p>
+      {% endif %}
+    </section>
+
+    <!-- ── User management ────────────────────────────────────────────────── -->
+    <section class="card p-6" aria-label="User account management">
+      <h2 class="text-base font-semibold text-white mb-4 flex items-center gap-2">
+        <span aria-hidden="true">👥</span> Users
+      </h2>
+
+      {% if users %}
+      <div class="space-y-2">
+        {% for u in users %}
+        <div class="flex items-center justify-between p-3 rounded-lg bg-[#0a0f1e]
+                    border border-[#1f2d45]"
+             role="group" aria-label="User {{ u.username }}">
+          <div>
+            <p class="text-sm font-medium text-white">{{ u.username }}</p>
+            <p class="text-xs text-[#8898aa]">{{ u.email }} · <span class="capitalize">{{ u.role }}</span></p>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="{{ 'badge-success' if u.is_active else 'badge-danger' }}
+                          px-2 py-0.5 rounded text-xs"
+                  aria-label="{{ 'Active' if u.is_active else 'Inactive' }}">
+              {{ 'Active' if u.is_active else 'Inactive' }}
+            </span>
+            <form method="POST" action="{{ url_for('admin.toggle_user', user_id=u.id) }}">
+              <button type="submit"
+                      class="text-xs text-[#4f8ef7] hover:underline focus:underline"
+                      aria-label="{{ 'Deactivate' if u.is_active else 'Activate' }} user {{ u.username }}">
+                {{ 'Deactivate' if u.is_active else 'Activate' }}
+              </button>
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+        <p class="text-[#8898aa] text-sm text-center py-4" role="status">No users found.</p>
+      {% endif %}
+    </section>
+
+  </div>
+
+</div>
+{% endblock %}

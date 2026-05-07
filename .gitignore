@@ -1,0 +1,73 @@
+# =============================================================================
+# SecureVision — .gitignore
+# =============================================================================
+
+# ── CRITICAL: Never expose secrets ───────────────────────────────────────────
+.env
+.env.*
+!.env.example          # Example template IS safe to commit
+
+# ── Python cache & build artefacts ───────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+*.whl
+
+# ── Virtual environments ──────────────────────────────────────────────────────
+.venv/
+venv/
+env/
+ENV/
+
+# ── Database files (may contain PII / audit logs) ────────────────────────────
+*.db
+*.sqlite
+*.sqlite3
+*.db-shm
+*.db-wal
+
+# ── Flask / runtime ───────────────────────────────────────────────────────────
+instance/
+logs/
+*.log
+
+# ── IDE / editor ──────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ── Testing & coverage ────────────────────────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+coverage.xml
+*.cover
+
+# ── Docker secrets ────────────────────────────────────────────────────────────
+docker-compose.override.yml
+*.pem
+*.key
+*.crt
+
+# ── Camera / hardware credentials ─────────────────────────────────────────────
+# If you store RTSP credentials in a file, add it here:
+camera_credentials.txt
+rtsp_config.json
+
+# ── Migrations (keep if using Flask-Migrate; remove otherwise) ────────────────
+# migrations/
+
+# ── Uploaded media / captures ────────────────────────────────────────────────
+uploads/
+captures/
+snapshots/

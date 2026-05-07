@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — SecureVision{% endblock %}
+
+{% block content %}
+<div class="p-6 lg:p-8 space-y-8">
+
+  <!-- Page header -->
+  <header>
+    <h1 class="text-2xl font-bold text-white">Security Dashboard</h1>
+    <p class="text-[#8898aa] text-sm mt-1">
+      Welcome back, <strong class="text-[#00d4aa]">{{ user.username }}</strong>.
+      Real-time overview of all access activity.
+    </p>
+  </header>
+
+  <!-- ── Stat cards ──────────────────────────────────────────────────────── -->
+  <!-- GEDSI: role="region" + aria-label groups related stats for screen readers -->
+  <section aria-label="Access statistics summary">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+
+      {% set stat_cards = [
+        ('Total Attempts', stats.total, '#00d4aa', '📊'),
+        ('Successful',     stats.success, '#4f8ef7', '✓'),
+        ('Blocked IPs',    stats.blocked, '#ff4d6d', '🚫'),
+        ('Failed Logins',  stats.failed,  '#f59e0b', '⚠'),
+      ] %}
+
+      {% for label, value, color, icon in stat_cards %}
+      <div class="card p-5" role="group" aria-label="{{ label }}: {{ value }}">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-medium text-[#8898aa] uppercase tracking-wide">{{ label }}</span>
+          <span aria-hidden="true" class="text-lg">{{ icon }}</span>
+        </div>
+        <p class="font-mono text-3xl font-bold" style="color:{{ color }}">{{ value }}</p>
+      </div>
+      {% endfor %}
+
+    </div>
+  </section>
+
+  <!-- ── Live camera preview + log feed ─────────────────────────────────── -->
+  <div class="grid grid-cols-1 xl:grid-cols-5 gap-6">
+
+    <!-- Camera preview -->
+    <section class="xl:col-span-2 card p-5" aria-label="Live camera feed preview">
+      <h2 class="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+        <span aria-hidden="true">📷</span> Live Monitor
+      </h2>
+      <div class="relative rounded-lg overflow-hidden bg-black aspect-video">
+        <img
+          src="{{ url_for('camera.feed') }}"
+          alt="Live security camera feed showing real-time video from the connected camera"
+          class="w-full h-full object-cover"
+          aria-live="polite"
+          aria-label="Live camera stream"
+        />
+        <!-- Live indicator -->
+        <div class="absolute top-2 left-2 flex items-center gap-1.5 px-2 py-1
+                    bg-black/70 rounded text-xs font-mono"
+             role="status" aria-label="Camera is live">
+          <span class="w-2 h-2 rounded-full bg-[#ff4d6d] animate-pulse" aria-hidden="true"></span>
+          <span class="text-white">LIVE</span>
+        </div>
+      </div>
+      <div class="mt-3 text-center">
+        <a href="{{ url_for('camera.view') }}"
+           class="text-xs text-[#4f8ef7] hover:underline focus:underline"
+           aria-label="Open full-screen camera view">
+          Open full view →
+        </a>
+      </div>
+    </section>
+
+    <!-- Recent access log -->
+    <section class="xl:col-span-3 card p-5" aria-label="Recent access log entries">
+      <h2 class="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+        <span aria-hidden="true">📋</span> Recent Access Log
+      </h2>
+
+      {% if logs %}
+      <div class="overflow-x-auto" tabindex="0" aria-label="Scrollable access log table">
+        <table class="w-full text-sm" aria-describedby="log-table-desc">
+          <caption id="log-table-desc" class="sr-only">
+            Table of recent login attempts showing timestamp, username, IP address, and outcome.
+          </caption>
+          <thead>
+            <tr class="border-b border-[#1f2d45]">
+              {% for col in ['Timestamp', 'Username', 'IP Address', 'Status'] %}
+              <th scope="col" class="pb-2 pr-4 text-left text-xs font-medium text-[#8898aa] uppercase tracking-wide">
+                {{ col }}
+              </th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[#1f2d45]">
+            {% for log in logs %}
+            <tr class="hover:bg-white/3 transition-colors">
+              <td class="py-2.5 pr-4 font-mono text-xs text-[#8898aa] whitespace-nowrap">
+                {{ log.timestamp.strftime('%Y-%m-%d %H:%M') }}
+              </td>
+              <td class="py-2.5 pr-4 text-white text-xs">{{ log.username_attempt }}</td>
+              <td class="py-2.5 pr-4 font-mono text-xs text-[#8898aa]">{{ log.ip_address }}</td>
+              <td class="py-2.5">
+                <span class="px-2 py-0.5 rounded text-xs font-medium
+                  {% if log.outcome == 'success' %}badge-success
+                  {% elif log.outcome in ['blocked_ip','blocked_user'] %}badge-danger
+                  {% else %}badge-warn{% endif %}"
+                  aria-label="Access outcome: {{ log.outcome.replace('_',' ') }}">
+                  {{ log.outcome.replace('_', ' ').title() }}
+                </span>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p class="text-[#8898aa] text-sm text-center py-8" role="status">
+        No access records yet.
+      </p>
+      {% endif %}
+
+    </section>
+  </div>
+</div>
+{% endblock %}

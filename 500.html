@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Server Error — SecureVision{% endblock %}
+{% block content %}
+<div class="min-h-screen flex items-center justify-center px-4">
+  <div class="text-center max-w-md">
+    <p class="font-mono text-8xl font-bold text-[#ff4d6d] mb-4" aria-hidden="true">500</p>
+    <h1 class="text-2xl font-bold text-white mb-2">Internal Server Error</h1>
+    <p class="text-[#8898aa] text-sm mb-6">An unexpected error occurred. The administrator has been notified.</p>
+    <a href="{{ url_for('dashboard.index') }}"
+       class="inline-block text-sm text-[#4f8ef7] hover:underline focus:underline">
+      ← Back to Dashboard
+    </a>
+  </div>
+</div>
+{% endblock %}

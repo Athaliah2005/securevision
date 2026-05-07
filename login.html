@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block title %}Sign In — SecureVision{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center px-4 py-12">
+  <div class="w-full max-w-md">
+
+    <!-- Brand header -->
+    <div class="text-center mb-10">
+      <p class="font-mono text-3xl font-bold tracking-tight" aria-label="SecureVision">
+        <span class="text-[#00d4aa]">SECURE</span><span class="text-white">VISION</span>
+      </p>
+      <p class="mt-2 text-[#8898aa] text-sm">
+        Authorised personnel only. All access is logged.
+      </p>
+    </div>
+
+    <!-- Login card -->
+    <div class="card p-8">
+      <h1 class="text-xl font-semibold text-white mb-6 text-center">Sign In to Your Account</h1>
+
+      <!--
+        GEDSI principles applied:
+        · All inputs have explicit <label> elements (not placeholder-only)
+        · aria-required marks mandatory fields
+        · aria-describedby links helper text to inputs
+        · autocomplete attributes enable assistive technology
+      -->
+      <form method="POST" action="{{ url_for('auth.login') }}" novalidate>
+
+        <!-- Username -->
+        <div class="mb-5">
+          <label for="username"
+                 class="block text-sm font-medium text-[#c4cdd8] mb-1.5">
+            Username
+            <span aria-hidden="true" class="text-[#ff4d6d]"> *</span>
+          </label>
+          <input
+            type="text"
+            id="username"
+            name="username"
+            autocomplete="username"
+            required
+            aria-required="true"
+            aria-describedby="username-help"
+            class="w-full bg-[#0a0f1e] border border-[#1f2d45] rounded-lg px-4 py-2.5
+                   text-white placeholder-[#8898aa] text-sm
+                   focus:border-[#00d4aa] focus:ring-2 focus:ring-[#00d4aa]/30
+                   transition-colors"
+            placeholder="Enter your username"
+          />
+          <p id="username-help" class="mt-1 text-xs text-[#8898aa]">
+            Use your registered system username.
+          </p>
+        </div>
+
+        <!-- Password -->
+        <div class="mb-6">
+          <label for="password"
+                 class="block text-sm font-medium text-[#c4cdd8] mb-1.5">
+            Password
+            <span aria-hidden="true" class="text-[#ff4d6d]"> *</span>
+          </label>
+          <div class="relative">
+            <input
+              type="password"
+              id="password"
+              name="password"
+              autocomplete="current-password"
+              required
+              aria-required="true"
+              aria-describedby="password-help"
+              class="w-full bg-[#0a0f1e] border border-[#1f2d45] rounded-lg px-4 py-2.5
+                     text-white placeholder-[#8898aa] text-sm pr-12
+                     focus:border-[#00d4aa] focus:ring-2 focus:ring-[#00d4aa]/30
+                     transition-colors"
+              placeholder="Enter your password"
+            />
+            <!-- GEDSI: Toggle password visibility with accessible label -->
+            <button
+              type="button"
+              id="toggle-pw"
+              aria-label="Show password"
+              aria-pressed="false"
+              onclick="togglePassword()"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-[#8898aa]
+                     hover:text-white focus:text-white transition-colors p-1"
+            >
+              <span aria-hidden="true" id="eye-icon">👁</span>
+            </button>
+          </div>
+          <p id="password-help" class="mt-1 text-xs text-[#8898aa]">
+            Minimum 8 characters required.
+          </p>
+        </div>
+
+        <!-- Submit -->
+        <button
+          type="submit"
+          class="w-full bg-[#00d4aa] hover:bg-[#00b894] text-black font-semibold
+                 py-2.5 px-4 rounded-lg transition-colors text-sm
+                 focus:ring-4 focus:ring-[#00d4aa]/40"
+          aria-label="Sign in to SecureVision"
+        >
+          Sign In
+        </button>
+      </form>
+
+      <!-- GEDSI: Inclusive, non-threatening advisory notice -->
+      <p class="mt-6 text-center text-xs text-[#8898aa] leading-relaxed">
+        This system is for authorised users only.<br />
+        Unauthorised access attempts are recorded and reported.
+      </p>
+    </div>
+
+    <!-- Accessibility notice -->
+    <p class="mt-6 text-center text-xs text-[#4a5568]">
+      Need accessibility support?
+      <a href="mailto:admin@example.com"
+         class="text-[#4f8ef7] hover:underline focus:underline"
+         aria-label="Email administrator for accessibility support">
+        Contact your administrator
+      </a>.
+    </p>
+
+  </div>
+</div>
+
+<script>
+  function togglePassword() {
+    const input = document.getElementById('password');
+    const btn   = document.getElementById('toggle-pw');
+    const isHidden = input.type === 'password';
+    input.type = isHidden ? 'text' : 'password';
+    btn.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
+    btn.setAttribute('aria-pressed', String(isHidden));
+  }
+</script>
+{% endblock %}

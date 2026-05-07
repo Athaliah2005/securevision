@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="SecureVision — Accessible security monitoring platform" />
+  <!-- Skip-navigation for keyboard / screen-reader users (GEDSI: accessibility) -->
+  <title>{% block title %}SecureVision{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --clr-bg: #0a0f1e;
+      --clr-surface: #111827;
+      --clr-border: #1f2d45;
+      --clr-accent: #00d4aa;
+      --clr-accent2: #4f8ef7;
+      --clr-danger: #ff4d6d;
+      --clr-warn: #f59e0b;
+      --clr-text: #e8edf5;
+      --clr-muted: #8898aa;
+    }
+
+    /* ── GEDSI: High-contrast focus ring for keyboard navigation ─────────── */
+    *:focus-visible {
+      outline: 3px solid var(--clr-accent);
+      outline-offset: 3px;
+    }
+
+    body {
+      background: var(--clr-bg);
+      color: var(--clr-text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+    }
+
+    .font-mono { font-family: 'Space Mono', monospace; }
+
+    /* ── Skip link (screen-reader / keyboard first) ──────────────────────── */
+    .skip-link {
+      position: absolute;
+      top: -60px;
+      left: 1rem;
+      background: var(--clr-accent);
+      color: #000;
+      padding: 0.5rem 1rem;
+      border-radius: 0 0 8px 8px;
+      font-weight: 700;
+      z-index: 9999;
+      transition: top 0.2s;
+    }
+    .skip-link:focus { top: 0; }
+
+    /* ── Status badges ───────────────────────────────────────────────────── */
+    .badge-success { background: rgba(0,212,170,.15); color: #00d4aa; border: 1px solid rgba(0,212,170,.4); }
+    .badge-danger  { background: rgba(255,77,109,.15); color: #ff4d6d; border: 1px solid rgba(255,77,109,.4); }
+    .badge-warn    { background: rgba(245,158,11,.15); color: #f59e0b; border: 1px solid rgba(245,158,11,.4); }
+    .badge-info    { background: rgba(79,142,247,.15); color: #4f8ef7; border: 1px solid rgba(79,142,247,.4); }
+
+    .card {
+      background: var(--clr-surface);
+      border: 1px solid var(--clr-border);
+      border-radius: 12px;
+    }
+
+    /* ── Animated background grid ────────────────────────────────────────── */
+    .grid-bg {
+      background-image:
+        linear-gradient(rgba(0,212,170,.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,212,170,.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="grid-bg">
+
+  <!-- GEDSI: Skip navigation link — first focusable element -->
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  {% if current_user and current_user.is_authenticated %}
+  <!-- ── Sidebar navigation ──────────────────────────────────────────────── -->
+  <div class="flex min-h-screen">
+    <nav
+      id="sidebar"
+      aria-label="Main navigation"
+      class="w-64 shrink-0 bg-[#0d1424] border-r border-[#1f2d45] flex flex-col"
+    >
+      <!-- Brand -->
+      <div class="px-6 py-5 border-b border-[#1f2d45]">
+        <a href="{{ url_for('dashboard.index') }}" aria-label="SecureVision home">
+          <span class="font-mono text-lg font-bold text-[#00d4aa]">SECURE</span
+          ><span class="font-mono text-lg font-bold text-white">VISION</span>
+        </a>
+        <p class="text-xs text-[#8898aa] mt-0.5">Monitoring Platform</p>
+      </div>
+
+      <!-- Nav links -->
+      <ul class="flex-1 px-3 py-4 space-y-1" role="list">
+        {% set nav = [
+          ('dashboard.index', 'Dashboard', '⬛', False),
+          ('camera.view',    'Live Camera', '📷', False),
+          ('admin.index',    'Admin Panel', '🔑', True),
+        ] %}
+        {% for endpoint, label, icon, admin_only in nav %}
+          {% if not admin_only or current_user.is_admin() %}
+          <li>
+            <a href="{{ url_for(endpoint) }}"
+               aria-current="{{ 'page' if request.endpoint == endpoint else 'false' }}"
+               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium
+                      text-[#8898aa] hover:text-white hover:bg-white/5 transition-colors
+                      {{ 'bg-white/8 text-white' if request.endpoint == endpoint else '' }}">
+              <span aria-hidden="true">{{ icon }}</span>
+              {{ label }}
+            </a>
+          </li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+
+      <!-- User info + logout -->
+      <div class="px-4 py-4 border-t border-[#1f2d45]">
+        <div class="flex items-center gap-3 mb-3">
+          <!-- GEDSI: Avatar with meaningful alt text -->
+          <div class="w-9 h-9 rounded-full bg-[#1f2d45] flex items-center justify-center"
+               aria-hidden="true">
+            <span class="text-[#00d4aa] font-mono font-bold text-sm">
+              {{ current_user.username[0].upper() }}
+            </span>
+          </div>
+          <div>
+            <p class="text-sm font-medium text-white">{{ current_user.username }}</p>
+            <p class="text-xs text-[#8898aa] capitalize">{{ current_user.role }}</p>
+          </div>
+        </div>
+        <a href="{{ url_for('auth.logout') }}"
+           class="block w-full text-center text-sm py-2 rounded-lg border border-[#1f2d45]
+                  text-[#8898aa] hover:text-[#ff4d6d] hover:border-[#ff4d6d] transition-colors"
+           aria-label="Sign out of your account">
+          Sign Out
+        </a>
+      </div>
+    </nav>
+
+    <!-- ── Main content area ─────────────────────────────────────────────── -->
+    <main id="main-content" class="flex-1 overflow-auto" tabindex="-1">
+  {% else %}
+    <main id="main-content" tabindex="-1">
+  {% endif %}
+
+      <!-- Flash messages — GEDSI: ARIA live region for screen readers -->
+      {% with messages = get_flashed_messages(with_categories=True) %}
+        {% if messages %}
+        <div role="alert" aria-live="assertive" aria-atomic="true"
+             class="fixed top-4 right-4 z-50 space-y-2 max-w-sm w-full">
+          {% for category, message in messages %}
+          <div class="card px-4 py-3 text-sm flex items-start gap-3
+                      {{ 'badge-success' if category == 'success' else
+                         'badge-danger'  if category == 'error'   else
+                         'badge-warn'    if category == 'warning' else 'badge-info' }}"
+               role="status">
+            <span aria-hidden="true">
+              {% if category == 'success' %}✓{% elif category == 'error' %}✕{% else %}ℹ{% endif %}
+            </span>
+            <span>{{ message }}</span>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      {% endwith %}
+
+      {% block content %}{% endblock %}
+
+    </main>
+  {% if current_user and current_user.is_authenticated %}
+  </div>
+  {% endif %}
+
+</body>
+</html>
